@@ -1,0 +1,9 @@
+{
+	"boundingBox":{
+		"leftX":0,
+		"bottomY":0,
+		"width":5,
+		"height":5
+	},
+	"dots":[[2,1],[1,2],[2,3],[4,5]]
+}

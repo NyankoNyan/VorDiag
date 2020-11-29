@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+ <head>
+  <title>canvas</title>
+  <meta charset="utf-8">
+  <script> 
+outputRepr = {"size":{"x":700,"y":700},"camera":[[1.1666666,0,0],[0,-1.1666666,0],[58.333332,641.6666,1]],"edges":[{"x1":211,"y1":0,"x2":210.625,"y2":3.75},{"x1":210.625,"y1":3.75,"x2":137.5,"y2":150},{"x1":210.625,"y1":3.75,"x2":260.5,"y2":170},{"x1":137.5,"y1":150,"x2":0,"y2":150},{"x1":137.5,"y1":150,"x2":162.5,"y2":200},{"x1":500,"y1":170,"x2":260.5,"y2":170},{"x1":260.5,"y1":170,"x2":239.5,"y2":200},{"x1":239.5,"y1":200,"x2":162.5,"y2":200},{"x1":162.5,"y1":200,"x2":137.5,"y2":250},{"x1":239.5,"y1":200,"x2":260.5,"y2":270},{"x1":137.5,"y1":250,"x2":0,"y2":250},{"x1":137.5,"y1":250,"x2":162.5,"y2":300},{"x1":500,"y1":270,"x2":260.5,"y2":270},{"x1":260.5,"y1":270,"x2":239.5,"y2":300},{"x1":239.5,"y1":300,"x2":162.5,"y2":300},{"x1":162.5,"y1":300,"x2":62.5,"y2":500},{"x1":239.5,"y1":300,"x2":299.5,"y2":500},{"x1":0,"y1":0,"x2":0,"y2":150},{"x1":0,"y1":150,"x2":0,"y2":250},{"x1":0,"y1":250,"x2":0,"y2":500},{"x1":500,"y1":500,"x2":500,"y2":270},{"x1":500,"y1":270,"x2":500,"y2":170},{"x1":500,"y1":170,"x2":500,"y2":0},{"x1":500,"y1":0,"x2":211,"y2":0},{"x1":211,"y1":0,"x2":0,"y2":0},{"x1":0,"y1":500,"x2":62.5,"y2":500},{"x1":62.5,"y1":500,"x2":299.5,"y2":500},{"x1":299.5,"y1":500,"x2":500,"y2":500}],"rays":[],"dots":[{"x":100,"y":100},{"x":100,"y":200},{"x":100,"y":300},{"x":200,"y":150},{"x":200,"y":250},{"x":200,"y":350},{"x":300,"y":120},{"x":300,"y":220},{"x":300,"y":320}]};
+camera = [[1,0,0],[0,1,0],[0,0,1]];
+coordToCamera = function(x,y){
+	var c = camera;
+	return {
+		"x":c[0][0]*x+c[1][0]*y+c[2][0],
+		"y":c[0][1]*x+c[1][1]*y+c[2][1]
+	};
+};
+getRayMult = function(){
+	return 1000/(Math.abs(camera[0][0])+Math.abs(camera[0][1])+Math.abs(camera[1][0])+Math.abs(camera[1][1]));
+};
+window.onload = function() {
+	var drawingCanvas = document.getElementById('smile');
+	var coord;
+	if(drawingCanvas && drawingCanvas.getContext) {
+		var context = drawingCanvas.getContext('2d');
+		if(outputRepr.camera!==undefined){
+			for(var i = 0; i < 3; i++){
+				for(var j = 0; j < 3; j++){
+					if(outputRepr.camera[i][j] !== undefined){
+						camera[i][j] = outputRepr.camera[i][j];
+					}
+				}
+			}
+		}
+		if(outputRepr.size!==undefined){
+			drawingCanvas.width = outputRepr.size.x;
+			drawingCanvas.height = outputRepr.size.y;
+		}
+		var rayMult = getRayMult();		
+		if(outputRepr.edges!==undefined){
+			outputRepr.edges.forEach((elem)=>{
+				context.shadowColor = "rgba(0,0,0,.5)";
+				context.shadowBlur = 2;
+				context.lineCap = 'round';
+				context.lineJoin = 'round';
+				context.lineWidth = 1;
+				context.beginPath();
+				coord = coordToCamera(elem.x1, elem.y1);
+				context.moveTo(coord.x, coord.y);
+				coord = coordToCamera(elem.x2, elem.y2);
+				context.lineTo(coord.x, coord.y);				
+				context.stroke();
+			});
+		}
+		if(outputRepr.rays!==undefined){
+			outputRepr.rays.forEach((elem)=>{
+				context.shadowColor = "rgba(0,0,0,.5)";
+				context.shadowBlur = 2;
+				context.lineCap = 'round';
+				context.lineJoin = 'round';
+				context.lineWidth = 1;
+				context.beginPath();
+				coord = coordToCamera(elem.x, elem.y);
+				context.moveTo(coord.x, coord.y);
+				var rayCoord = coordToCamera(elem.x+elem.dx*rayMult, elem.y+elem.dy*rayMult);
+				context.lineTo(rayCoord.x, rayCoord.y);
+				context.lineCap = 'round';
+				context.stroke();
+			});
+		}			
+		if(outputRepr.dots!==undefined){
+			outputRepr.dots.forEach((elem)=>{
+				context.shadowColor = "rgba(0,0,0,.5)";
+				context.shadowBlur = 2;
+				context.lineCap = 'round';
+				context.lineJoin = 'round';
+				context.lineWidth = 1;
+				context.beginPath();
+				coord = coordToCamera(elem.x, elem.y);
+				context.beginPath();
+				context.arc(coord.x, coord.y, 3, 0, Math.PI*2);
+				context.fill();
+			});
+		}
+	}
+}
+  </script>
+ </head>
+ <body>
+  <canvas id="smile" width="200" height="200">
+    <p>Ваш браузер не поддерживает рисование.</p>
+  </canvas>
+ </body>
+</html>
