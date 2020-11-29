@@ -17,7 +17,7 @@ public class CanvasCreator
     private List<Dot> _dots = new List<Dot>();
 
     private static string template;
-    private const string templateFile = "..\\..\\..\\template.txt";
+    private const string templateFile = "canvas_template.txt";
 
     static CanvasCreator()
     {
