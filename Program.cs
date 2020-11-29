@@ -47,13 +47,13 @@ namespace VorDiag
                     canvasCreator.AddDot( dot[0], dot[1] );
                 }
 
-                File.WriteAllText( $"..\\..\\..\\tests\\out\\{fileNameCore}.html", canvasCreator.GetHtmlContent() );
+                File.WriteAllText( $"tests\\out\\{fileNameCore}.html", canvasCreator.GetHtmlContent() );
             }
         }
 
         static string[] InputFiles()
         {
-            return Directory.GetFiles( "..\\..\\..\\tests\\in\\" );
+            return Directory.GetFiles( "tests\\in\\" );
         }
     }
 }
