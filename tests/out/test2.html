@@ -4,16 +4,17 @@
   <title>canvas</title>
   <meta charset="utf-8">
   <script> 
-outputRepr = {"size":{"x":700,"y":700},"camera":[[97.22222,0,0],[0,-97.22222,0],[155.55556,544.44446,1]],"edges":[{"x1":1.5,"y1":-1,"x2":1.5,"y2":1.5},{"x1":2.5,"y1":-1,"x2":2.5,"y2":1.5},{"x1":3.5,"y1":-1,"x2":3.5,"y2":1.5},{"x1":1.5,"y1":1.5,"x2":-1,"y2":1.5},{"x1":2.5,"y1":1.5,"x2":1.5,"y2":1.5},{"x1":3.5,"y1":1.5,"x2":2.5,"y2":1.5},{"x1":5,"y1":1.5,"x2":3.5,"y2":1.5},{"x1":3.5,"y1":1.5,"x2":3.5,"y2":2.5},{"x1":2.5,"y1":1.5,"x2":2.5,"y2":2.5},{"x1":1.5,"y1":1.5,"x2":1.5,"y2":2.5},{"x1":1.5,"y1":2.5,"x2":-1,"y2":2.5},{"x1":2.5,"y1":2.5,"x2":1.5,"y2":2.5},{"x1":3.5,"y1":2.5,"x2":2.5,"y2":2.5},{"x1":5,"y1":2.5,"x2":3.5,"y2":2.5},{"x1":3.5,"y1":2.5,"x2":3.5,"y2":3.5},{"x1":2.5,"y1":2.5,"x2":2.5,"y2":3.5},{"x1":1.5,"y1":2.5,"x2":1.5,"y2":3.5},{"x1":1.5,"y1":3.5,"x2":-1,"y2":3.5},{"x1":2.5,"y1":3.5,"x2":1.5,"y2":3.5},{"x1":3.5,"y1":3.5,"x2":2.5,"y2":3.5},{"x1":5,"y1":3.5,"x2":3.5,"y2":3.5},{"x1":3.5,"y1":3.5,"x2":3.5,"y2":5},{"x1":2.5,"y1":3.5,"x2":2.5,"y2":5},{"x1":1.5,"y1":3.5,"x2":1.5,"y2":5},{"x1":-1,"y1":-1,"x2":-1,"y2":1.5},{"x1":-1,"y1":1.5,"x2":-1,"y2":2.5},{"x1":-1,"y1":2.5,"x2":-1,"y2":3.5},{"x1":-1,"y1":3.5,"x2":-1,"y2":5},{"x1":5,"y1":5,"x2":5,"y2":3.5},{"x1":5,"y1":3.5,"x2":5,"y2":2.5},{"x1":5,"y1":2.5,"x2":5,"y2":1.5},{"x1":5,"y1":1.5,"x2":5,"y2":-1},{"x1":5,"y1":-1,"x2":3.5,"y2":-1},{"x1":3.5,"y1":-1,"x2":2.5,"y2":-1},{"x1":2.5,"y1":-1,"x2":1.5,"y2":-1},{"x1":1.5,"y1":-1,"x2":-1,"y2":-1},{"x1":-1,"y1":5,"x2":1.5,"y2":5},{"x1":1.5,"y1":5,"x2":2.5,"y2":5},{"x1":2.5,"y1":5,"x2":3.5,"y2":5},{"x1":3.5,"y1":5,"x2":5,"y2":5}],"rays":[],"dots":[{"x":1,"y":1},{"x":1,"y":2},{"x":1,"y":3},{"x":1,"y":4},{"x":2,"y":1},{"x":2,"y":2},{"x":2,"y":3},{"x":2,"y":4},{"x":3,"y":1},{"x":3,"y":2},{"x":3,"y":3},{"x":3,"y":4},{"x":4,"y":1},{"x":4,"y":2},{"x":4,"y":3},{"x":4,"y":4}]};
-camera = [[1,0,0],[0,1,0],[0,0,1]];
-coordToCamera = function(x,y){
+var outputRepr = {"size":{"x":700,"y":700},"camera":[[97.22222,0,0],[0,-97.22222,0],[155.55556,544.44446,1]],"edges":[],"rays":[],"dots":[{"x":1,"y":1},{"x":1,"y":2},{"x":1,"y":3},{"x":1,"y":4},{"x":2,"y":1},{"x":2,"y":2},{"x":2,"y":3},{"x":2,"y":4},{"x":3,"y":1},{"x":3,"y":2},{"x":3,"y":3},{"x":3,"y":4},{"x":4,"y":1},{"x":4,"y":2},{"x":4,"y":3},{"x":4,"y":4}],"polygons":[{"dots":[{"x":1.5,"y":1.5},{"x":1.5,"y":-1},{"x":-1,"y":-1},{"x":-1,"y":1.5}]},{"dots":[{"x":1.5,"y":-1},{"x":1.5,"y":1.5},{"x":2.5,"y":1.5},{"x":2.5,"y":-1}]},{"dots":[{"x":2.5,"y":-1},{"x":2.5,"y":1.5},{"x":3.5,"y":1.5},{"x":3.5,"y":-1}]},{"dots":[{"x":3.5,"y":-1},{"x":3.5,"y":1.5},{"x":5,"y":1.5},{"x":5,"y":-1}]},{"dots":[{"x":1.5,"y":1.5},{"x":-1,"y":1.5},{"x":-1,"y":2.5},{"x":1.5,"y":2.5}]},{"dots":[{"x":2.5,"y":1.5},{"x":1.5,"y":1.5},{"x":1.5,"y":2.5},{"x":2.5,"y":2.5}]},{"dots":[{"x":3.5,"y":1.5},{"x":2.5,"y":1.5},{"x":2.5,"y":2.5},{"x":3.5,"y":2.5}]},{"dots":[{"x":5,"y":1.5},{"x":3.5,"y":1.5},{"x":3.5,"y":2.5},{"x":5,"y":2.5}]},{"dots":[{"x":1.5,"y":2.5},{"x":-1,"y":2.5},{"x":-1,"y":3.5},{"x":1.5,"y":3.5}]},{"dots":[{"x":2.5,"y":2.5},{"x":1.5,"y":2.5},{"x":1.5,"y":3.5},{"x":2.5,"y":3.5}]},{"dots":[{"x":3.5,"y":2.5},{"x":2.5,"y":2.5},{"x":2.5,"y":3.5},{"x":3.5,"y":3.5}]},{"dots":[{"x":5,"y":2.5},{"x":3.5,"y":2.5},{"x":3.5,"y":3.5},{"x":5,"y":3.5}]},{"dots":[{"x":1.5,"y":3.5},{"x":-1,"y":3.5},{"x":-1,"y":5},{"x":1.5,"y":5}]},{"dots":[{"x":2.5,"y":3.5},{"x":1.5,"y":3.5},{"x":1.5,"y":5},{"x":2.5,"y":5}]},{"dots":[{"x":3.5,"y":3.5},{"x":2.5,"y":3.5},{"x":2.5,"y":5},{"x":3.5,"y":5}]},{"dots":[{"x":5,"y":3.5},{"x":3.5,"y":3.5},{"x":3.5,"y":5},{"x":5,"y":5}]}]};
+var camera = [[1,0,0],[0,1,0],[0,0,1]];
+var coordToCamera = function(x,y){
 	var c = camera;
 	return {
 		"x":c[0][0]*x+c[1][0]*y+c[2][0],
 		"y":c[0][1]*x+c[1][1]*y+c[2][1]
 	};
 };
-getRayMult = function(){
+var polygonColors = ["#AA3333", "#33AA33", "#3333AA", "#AAAA33", "#AA33AA", "#33AAAA"]; 
+var getRayMult = function(){
 	return 1000/(Math.abs(camera[0][0])+Math.abs(camera[0][1])+Math.abs(camera[1][0])+Math.abs(camera[1][1]));
 };
 window.onload = function() {
@@ -35,6 +36,28 @@ window.onload = function() {
 			drawingCanvas.height = outputRepr.size.y;
 		}
 		var rayMult = getRayMult();		
+		
+		if(outputRepr.polygons!==undefined){
+			for(var polyId = 0; polyId < outputRepr.polygons.length; polyId++){
+				var poly = outputRepr.polygons[polyId];
+				context.fillStyle = polygonColors[polyId % polygonColors.length];
+				context.shadowColor = "rgba(0,0,0,.5)";
+				context.shadowBlur = 2;
+				context.lineCap = 'round';
+				context.lineJoin = 'round';
+				context.lineWidth = 1;
+				
+				context.beginPath();
+				coord = coordToCamera(poly.dots[0].x, poly.dots[0].y);
+				context.moveTo(coord.x, coord.y);
+				for(var dotId = 1; dotId < poly.dots.length; dotId++){
+					coord = coordToCamera(poly.dots[dotId].x, poly.dots[dotId].y);
+					context.lineTo(coord.x, coord.y);
+				}
+				context.closePath();
+				context.fill();
+			}
+		}
 		if(outputRepr.edges!==undefined){
 			outputRepr.edges.forEach((elem)=>{
 				context.shadowColor = "rgba(0,0,0,.5)";
@@ -69,11 +92,11 @@ window.onload = function() {
 		if(outputRepr.dots!==undefined){
 			outputRepr.dots.forEach((elem)=>{
 				context.shadowColor = "rgba(0,0,0,.5)";
+				context.fillStyle = "#FFF";
 				context.shadowBlur = 2;
 				context.lineCap = 'round';
 				context.lineJoin = 'round';
 				context.lineWidth = 1;
-				context.beginPath();
 				coord = coordToCamera(elem.x, elem.y);
 				context.beginPath();
 				context.arc(coord.x, coord.y, 3, 0, Math.PI*2);

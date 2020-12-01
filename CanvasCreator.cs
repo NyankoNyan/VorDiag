@@ -12,9 +12,10 @@ public class CanvasCreator
     private List<Edge> _edges = new List<Edge>();
     public Ray[] rays { get => _rays.ToArray(); }
     private List<Ray> _rays = new List<Ray>();
-
     public Dot[] dots { get => _dots.ToArray(); }
     private List<Dot> _dots = new List<Dot>();
+    public Polygon[] polygons { get => _polygons.ToArray(); }
+    private List<Polygon> _polygons = new List<Polygon>();
 
     private static string template;
     private const string templateFile = "canvas_template.txt";
@@ -74,6 +75,11 @@ public class CanvasCreator
         public float y { get; set; }
     }
 
+    public struct Polygon
+    {
+        public Dot[] dots { get; set; }
+    }
+
     public void AddEdge(float x1, float y1, float x2, float y2)
     {
         _edges.Add( new Edge() { x1 = x1, y1 = y1, x2 = x2, y2 = y2 } );
@@ -87,5 +93,16 @@ public class CanvasCreator
     public void AddDot(float x, float y)
     {
         _dots.Add( new Dot() { x = x, y = y } );
+    }
+
+    public void AddPolygon(float[] dots)
+    {
+        Polygon polygon = new Polygon();
+        polygon.dots = new Dot[dots.Length / 2];
+        for (int i = 0; i < polygon.dots.Length; i++) {
+            polygon.dots[i].x = dots[i * 2];
+            polygon.dots[i].y = dots[i * 2 + 1];
+        }
+        _polygons.Add( polygon );
     }
 }

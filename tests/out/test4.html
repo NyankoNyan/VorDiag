@@ -4,16 +4,17 @@
   <title>canvas</title>
   <meta charset="utf-8">
   <script> 
-outputRepr = {"size":{"x":700,"y":700},"camera":[[1.1666666,0,0],[0,-1.1666666,0],[58.333332,641.6666,1]],"edges":[{"x1":150,"y1":150,"x2":0,"y2":150},{"x1":300,"y1":0,"x2":150,"y2":150},{"x1":150,"y1":150,"x2":150,"y2":250},{"x1":150,"y1":250,"x2":0,"y2":250},{"x1":150,"y1":250,"x2":400,"y2":500},{"x1":0,"y1":0,"x2":0,"y2":150},{"x1":0,"y1":150,"x2":0,"y2":250},{"x1":0,"y1":250,"x2":0,"y2":500},{"x1":500,"y1":500,"x2":500,"y2":0},{"x1":500,"y1":0,"x2":300,"y2":0},{"x1":300,"y1":0,"x2":0,"y2":0},{"x1":0,"y1":500,"x2":400,"y2":500},{"x1":400,"y1":500,"x2":500,"y2":500}],"rays":[],"dots":[{"x":200,"y":200},{"x":100,"y":100},{"x":100,"y":200},{"x":100,"y":300}]};
-camera = [[1,0,0],[0,1,0],[0,0,1]];
-coordToCamera = function(x,y){
+var outputRepr = {"size":{"x":700,"y":700},"camera":[[1.1666666,0,0],[0,-1.1666666,0],[58.333332,641.6666,1]],"edges":[],"rays":[],"dots":[{"x":200,"y":200},{"x":100,"y":100},{"x":100,"y":200},{"x":100,"y":300}],"polygons":[{"dots":[{"x":0,"y":150},{"x":150,"y":150},{"x":300,"y":0},{"x":0,"y":0}]},{"dots":[{"x":150,"y":150},{"x":0,"y":150},{"x":0,"y":250},{"x":150,"y":250}]},{"dots":[{"x":300,"y":0},{"x":150,"y":150},{"x":150,"y":250},{"x":400,"y":500},{"x":500,"y":500},{"x":500,"y":0}]},{"dots":[{"x":150,"y":250},{"x":0,"y":250},{"x":0,"y":500},{"x":400,"y":500}]}]};
+var camera = [[1,0,0],[0,1,0],[0,0,1]];
+var coordToCamera = function(x,y){
 	var c = camera;
 	return {
 		"x":c[0][0]*x+c[1][0]*y+c[2][0],
 		"y":c[0][1]*x+c[1][1]*y+c[2][1]
 	};
 };
-getRayMult = function(){
+var polygonColors = ["#AA3333", "#33AA33", "#3333AA", "#AAAA33", "#AA33AA", "#33AAAA"]; 
+var getRayMult = function(){
 	return 1000/(Math.abs(camera[0][0])+Math.abs(camera[0][1])+Math.abs(camera[1][0])+Math.abs(camera[1][1]));
 };
 window.onload = function() {
@@ -35,6 +36,28 @@ window.onload = function() {
 			drawingCanvas.height = outputRepr.size.y;
 		}
 		var rayMult = getRayMult();		
+		
+		if(outputRepr.polygons!==undefined){
+			for(var polyId = 0; polyId < outputRepr.polygons.length; polyId++){
+				var poly = outputRepr.polygons[polyId];
+				context.fillStyle = polygonColors[polyId % polygonColors.length];
+				context.shadowColor = "rgba(0,0,0,.5)";
+				context.shadowBlur = 2;
+				context.lineCap = 'round';
+				context.lineJoin = 'round';
+				context.lineWidth = 1;
+				
+				context.beginPath();
+				coord = coordToCamera(poly.dots[0].x, poly.dots[0].y);
+				context.moveTo(coord.x, coord.y);
+				for(var dotId = 1; dotId < poly.dots.length; dotId++){
+					coord = coordToCamera(poly.dots[dotId].x, poly.dots[dotId].y);
+					context.lineTo(coord.x, coord.y);
+				}
+				context.closePath();
+				context.fill();
+			}
+		}
 		if(outputRepr.edges!==undefined){
 			outputRepr.edges.forEach((elem)=>{
 				context.shadowColor = "rgba(0,0,0,.5)";
@@ -69,11 +92,11 @@ window.onload = function() {
 		if(outputRepr.dots!==undefined){
 			outputRepr.dots.forEach((elem)=>{
 				context.shadowColor = "rgba(0,0,0,.5)";
+				context.fillStyle = "#FFF";
 				context.shadowBlur = 2;
 				context.lineCap = 'round';
 				context.lineJoin = 'round';
 				context.lineWidth = 1;
-				context.beginPath();
 				coord = coordToCamera(elem.x, elem.y);
 				context.beginPath();
 				context.arc(coord.x, coord.y, 3, 0, Math.PI*2);
