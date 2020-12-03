@@ -7,6 +7,10 @@ class InputRepr
 {
     public BoudingBox boundingBox { get; set; }
     public float[][] dots { get; set; }
+    public InputRepr()
+    {
+        boundingBox = new BoudingBox();
+    }
     public class BoudingBox
     {
         public float leftX { get; set; }
@@ -17,5 +21,9 @@ class InputRepr
     public static InputRepr FromFile(string filePath)
     {
         return JsonSerializer.Deserialize<InputRepr>( File.ReadAllText( filePath ) );
+    }
+    public string GetContent()
+    {
+        return JsonSerializer.Serialize( this, new JsonSerializerOptions() { WriteIndented = true } );
     }
 }

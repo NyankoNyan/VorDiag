@@ -7,19 +7,90 @@ using System.Runtime.InteropServices;
 
 namespace VorDiag
 {
+
     class Program
     {
+        static bool drawDebug = false;
+        static bool test = false;
+        static string specificTestName = "";
+
         static void Main(string[] args)
+        {
+            if (test) {
+                BorderConditionTests();
+            } else {
+                RandomGenerationTests( 20, 10, 100 );
+            }
+        }
+
+        static void RandomGenerationTests(int count, int minDots, int maxDots)
+        {
+            Random random = new Random();
+            for (int iter = 0; iter < count; iter++) {
+                VoronoiDiagram.BoundingBox boundingBox = new VoronoiDiagram.BoundingBox() {
+                    x = 0,
+                    y = 0,
+                    sizeX = 1000,
+                    sizeY = 1000
+                };
+                var dots = GetRandomDots( random.Next( minDots, maxDots ), 100, 900, 100, 900 );
+
+                InputRepr inputRepr = new InputRepr();
+
+                inputRepr.boundingBox.leftX = boundingBox.x;
+                inputRepr.boundingBox.bottomY = boundingBox.y;
+                inputRepr.boundingBox.width = boundingBox.sizeX;
+                inputRepr.boundingBox.height = boundingBox.sizeY;
+                inputRepr.dots = dots.Select( dot => new float[2] { dot.x, dot.y } ).ToArray();
+                File.WriteAllText( $"input_{iter.ToString()}.json", inputRepr.GetContent() );
+
+                var borders = VoronoiDiagram.CreateEdges( dots );
+
+                borders = VoronoiDiagram.ApplyBoundingBox( borders, boundingBox );
+
+                //CanvasCreator canvasCreator = GetSimpleCanvas( dots, borders );
+                CanvasCreator canvasCreator = GetPolygonalCanvas( dots, borders );
+
+                SetupCanvas( canvasCreator, boundingBox );
+
+                File.WriteAllText( $"output_{iter.ToString()}.html", canvasCreator.GetHtmlContent() );
+            }
+        }
+
+        static void SetupCanvas(CanvasCreator canvasCreator, VoronoiDiagram.BoundingBox boundingBox)
+        {
+            canvasCreator.size = new CanvasCreator.Size() { x = 700, y = 700 };
+
+            const float margin = 0.1f;
+            canvasCreator.SetupCamera(
+                boundingBox.x - boundingBox.sizeX * margin,
+                boundingBox.x + boundingBox.sizeX * ( margin + 1f ),
+                boundingBox.y - boundingBox.sizeY * margin,
+                boundingBox.y + boundingBox.sizeY * ( margin + 1f ) );
+        }
+
+        static List<VoronoiDiagram.Dot> GetRandomDots(int count, float minX, float maxX, float minY, float maxY)
+        {
+            List<VoronoiDiagram.Dot> dots = new List<VoronoiDiagram.Dot>();
+            Random random = new Random();
+            for (int iter = 0; iter < count; iter++) {
+                dots.Add( new VoronoiDiagram.Dot() {
+                    x = minX + (float)random.NextDouble() * ( maxX - minX ),
+                    y = minY + (float)random.NextDouble() * ( maxY - minY )
+                } );
+            }
+            return dots;
+        }
+
+        static void BorderConditionTests()
         {
             foreach (string filePath in InputFiles()) {
                 string fileNameCore = Path.GetFileNameWithoutExtension( filePath );
-                //if (fileNameCore != "test1") {
-                //    continue;//todo delete
-                //}
+                if (specificTestName != "" && fileNameCore != specificTestName) {
+                    continue;//todo delete
+                }
                 var inputRepr = InputRepr.FromFile( filePath );
 
-                var dots = inputRepr.dots.Select( d => new VoronoiDiagram.Dot() { x = d[0], y = d[1] } );
-                var borders = VoronoiDiagram.CreateEdges( dots );
                 var boundingBox = new VoronoiDiagram.BoundingBox() {
                     x = inputRepr.boundingBox.leftX,
                     y = inputRepr.boundingBox.bottomY,
@@ -27,21 +98,26 @@ namespace VorDiag
                     sizeY = inputRepr.boundingBox.height
                 };
 
+                DiagramBuildLogger logger = null;
+                if (drawDebug) {
+                    logger = new DiagramBuildLogger( "", fileNameCore + "_debug", boundingBox );
+                }
+
+                var dots = inputRepr.dots.Select( d => new VoronoiDiagram.Dot() { x = d[0], y = d[1] } );
+                var borders = VoronoiDiagram.CreateEdges( dots, logger );
+
+                CanvasCreator canvasCreator;
+
+                canvasCreator = GetSimpleCanvas( dots, borders );
+                SetupCanvas( canvasCreator, boundingBox );
+                File.WriteAllText( $"..\\..\\..\\tests\\out\\{fileNameCore}.html", canvasCreator.GetHtmlContent() );
+
                 borders = VoronoiDiagram.ApplyBoundingBox( borders, boundingBox );
 
-                //CanvasCreator canvasCreator = GetSimpleCanvas( dots, borders );
-                CanvasCreator canvasCreator = GetPolygonalCanvas( dots, borders );
+                canvasCreator = GetPolygonalCanvas( dots, borders );
+                SetupCanvas( canvasCreator, boundingBox );
 
-                canvasCreator.size = new CanvasCreator.Size() { x = 700, y = 700 };
-
-                const float margin = 0.1f;
-                canvasCreator.SetupCamera(
-                    boundingBox.x - boundingBox.sizeX * margin,
-                    boundingBox.x + boundingBox.sizeX * ( margin + 1f ),
-                    boundingBox.y - boundingBox.sizeY * margin,
-                    boundingBox.y + boundingBox.sizeY * ( margin + 1f ) );
-
-                File.WriteAllText( $"..\\..\\..\\tests\\out\\{fileNameCore}.html", canvasCreator.GetHtmlContent() );
+                File.WriteAllText( $"..\\..\\..\\tests\\out\\{fileNameCore}_p.html", canvasCreator.GetHtmlContent() );
             }
         }
 

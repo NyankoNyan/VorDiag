@@ -2,11 +2,27 @@
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 
 public class VoronoiDiagram
 {
     private const float eps = 0.0001f;
     private const float eps2 = eps * eps;
+
+    public struct BuildCircle
+    {
+        public Dot center;
+        public float radius;
+    }
+    public struct BuildArc
+    {
+        public float leftX, rightX, directrixY;
+        public Dot focus;
+    }
+    public interface IBuildInfo
+    {
+        public void SendState(IEnumerable<Border> borders, IEnumerable<BuildCircle> circles, IEnumerable<BuildArc> arcs, IEnumerable<Dot> pointsOfInterest, float directrixY);
+    }
 
     public struct Dot : IEquatable<Dot>
     {
@@ -27,12 +43,23 @@ public class VoronoiDiagram
     {
         int IComparer<Dot>.Compare(Dot d1, Dot d2)
         {
-            if (Math.Abs( d1.y - d2.y ) < eps) {
-                if (Math.Abs( d1.x - d2.x ) < eps) {
+            if (Math.Abs( d1.y - d2.y ) < AdEps( d1.y, d2.y )) {
+                if (Math.Abs( d1.x - d2.x ) < AdEps( d1.x, d2.x )) {
                     return 0;
                 } else {
                     return d1.x > d2.x ? 1 : -1;
                 }
+            } else {
+                return d1.y > d2.y ? 1 : -1;
+            }
+        }
+    }
+    public class DotPreciceComparerY : IComparer<Dot>
+    {
+        public int Compare(Dot d1, Dot d2)
+        {
+            if (d1.y == d2.y) {
+                return d1.x > d2.x ? 1 : -1;
             } else {
                 return d1.y > d2.y ? 1 : -1;
             }
@@ -78,9 +105,14 @@ public class VoronoiDiagram
         public LinkedListNode<Dot> leftArcNode, rightArcNode;
     }
 
-    public static List<Border> CreateEdges(IEnumerable<Dot> dots)
+    public static float AdEps(float v1, float v2)
     {
-        LinkedList<Event> events = new LinkedList<Event>( dots.OrderBy( dot => dot, new DotComparerYPriority() ).Distinct().Select( dot => new Event( dot ) ) );
+        return Math.Abs( v1 + v2 ) * eps;
+    }
+
+    public static List<Border> CreateEdges(IEnumerable<Dot> dots, IBuildInfo buildInfo = null)
+    {
+        LinkedList<Event> events = new LinkedList<Event>( dots.OrderBy( dot => dot, new DotPreciceComparerY() ).Distinct().Select( dot => new Event( dot ) ) );
 
         LinkedList<Dot> arcs = new LinkedList<Dot>();
         List<Corner> corners = new List<Corner>();
@@ -113,6 +145,10 @@ public class VoronoiDiagram
                     }
                 }
                 prevDirectrix = simpleEvent.directrix;
+            }
+
+            if (buildInfo != null) {
+                LogBuildInfo( buildInfo, corners, circleEvents, borders, simpleEvent, dots );
             }
 
             switch (simpleEvent.eventType) {
@@ -178,10 +214,10 @@ public class VoronoiDiagram
 
                                 // We don't insert circle for new arc, cause we just processed it
                                 if (cornerId > 0) {
-                                    InsertCircleIfPossible( corners[cornerId - 1], corners[cornerId], simpleEvent.directrix, events, circleEvents );
+                                    InsertCircleIfPossible( corners[cornerId - 1], corners[cornerId], simpleEvent, events, circleEvents );
                                 }
                                 if (cornerId + 2 < corners.Count) {
-                                    InsertCircleIfPossible( corners[cornerId + 1], corners[cornerId + 2], simpleEvent.directrix, events, circleEvents );
+                                    InsertCircleIfPossible( corners[cornerId + 1], corners[cornerId + 2], simpleEvent, events, circleEvents );
                                 }
 
                                 cornerFound = true;
@@ -215,10 +251,10 @@ public class VoronoiDiagram
 
                                 // We don't insert circle for new arc, cause it intersect only two focus-points
                                 if (cornerId > 0) {
-                                    InsertCircleIfPossible( corners[cornerId - 1], corners[cornerId], simpleEvent.directrix, events, circleEvents );
+                                    InsertCircleIfPossible( corners[cornerId - 1], corners[cornerId], simpleEvent, events, circleEvents );
                                 }
                                 if (cornerId + 2 < corners.Count) {
-                                    InsertCircleIfPossible( corners[cornerId + 1], corners[cornerId + 2], simpleEvent.directrix, events, circleEvents );
+                                    InsertCircleIfPossible( corners[cornerId + 1], corners[cornerId + 2], simpleEvent, events, circleEvents );
                                 }
 
                                 cornerFound = true;
@@ -242,7 +278,7 @@ public class VoronoiDiagram
                             // We don't insert circle for new arc, cause it intersect only two focus-points
                             // And we don't insert circle for right arc, cause it last
                             if (corners.Count >= 3) {
-                                InsertCircleIfPossible( corners[corners.Count - 3], corners[corners.Count - 2], simpleEvent.directrix, events, circleEvents );
+                                InsertCircleIfPossible( corners[corners.Count - 3], corners[corners.Count - 2], simpleEvent, events, circleEvents );
                             }
                         }
                     }
@@ -286,10 +322,10 @@ public class VoronoiDiagram
 
                     // Add new circle events
                     if (leftCornerId > 0) {
-                        InsertCircleIfPossible( corners[leftCornerId - 1], corners[leftCornerId], simpleEvent.directrix, events, circleEvents );
+                        InsertCircleIfPossible( corners[leftCornerId - 1], corners[leftCornerId], simpleEvent, events, circleEvents );
                     }
                     if (leftCornerId + 1 < corners.Count) {
-                        InsertCircleIfPossible( corners[leftCornerId], corners[leftCornerId + 1], simpleEvent.directrix, events, circleEvents );
+                        InsertCircleIfPossible( corners[leftCornerId], corners[leftCornerId + 1], simpleEvent, events, circleEvents );
                     }
 
                     break;
@@ -299,6 +335,51 @@ public class VoronoiDiagram
         return borders.Where( x => x.begin == null || x.end == null || x.SqrLength() > eps ).ToList();
     }
 
+    private static void LogBuildInfo(IBuildInfo buildInfo, List<Corner> corners, Dictionary<LinkedListNode<Dot>, LinkedListNode<Event>> circleEvents, List<Border> borders, Event simpleEvent, IEnumerable<Dot> dots)
+    {
+        BuildCircle[] buildCircles = circleEvents.Values.Select( x =>
+            new BuildCircle() {
+                center = x.Value.circle.center,
+                radius = x.Value.circle.directrix - x.Value.circle.center.y
+            } ).ToArray();
+        BuildArc[] buildArcs;
+        if (corners.Count > 0) {
+            buildArcs = new BuildArc[corners.Count + 1];
+            for (int cornerId = 0; cornerId < corners.Count; cornerId++) {
+                buildArcs[cornerId] = new BuildArc() {
+                    focus = corners[cornerId].leftArcNode.Value,
+                    leftX = cornerId > 0 ? corners[cornerId - 1].dot.x : -float.MaxValue,
+                    rightX = corners[cornerId].dot.x,
+                    directrixY = simpleEvent.directrix
+                };
+            }
+            buildArcs[corners.Count] = new BuildArc() {
+                focus = corners[corners.Count - 1].rightArcNode.Value,
+                leftX = corners[corners.Count - 1].dot.x,
+                rightX = float.MaxValue,
+                directrixY = simpleEvent.directrix
+            };
+        } else {
+            buildArcs = new BuildArc[0];
+        }
+        List<Dot> interestPoints = new List<Dot>();
+        switch (simpleEvent.eventType) {
+            case Event.EventType.Dot:
+                interestPoints.Add( simpleEvent.dot );
+                break;
+            case Event.EventType.Circle:
+                interestPoints.Add( simpleEvent.circle.center );
+                interestPoints.Add( simpleEvent.circle.v1 );
+                interestPoints.Add( simpleEvent.circle.v2 );
+                interestPoints.Add( simpleEvent.circle.v3 );
+                break;
+        }
+        foreach (var dot in dots) {
+            interestPoints.Add( dot );
+        }
+        buildInfo.SendState( borders, buildCircles, buildArcs, interestPoints, simpleEvent.directrix );
+    }
+
     public static List<Border> ApplyBoundingBox(List<Border> borders, BoundingBox box)
     {
         List<Border> outBorders;
@@ -306,6 +387,7 @@ public class VoronoiDiagram
         outBorders = LineSplit( new VoronoiDiagram.Line() { dx = -1, c = box.x + box.sizeX }, outBorders );
         outBorders = LineSplit( new VoronoiDiagram.Line() { dy = 1, c = -box.y }, outBorders );
         outBorders = LineSplit( new VoronoiDiagram.Line() { dy = -1, c = box.y + box.sizeY }, outBorders );
+        //return outBorders;
         return outBorders.Where( x => x.begin != null && x.end != null ).ToList();
     }
 
@@ -352,7 +434,7 @@ public class VoronoiDiagram
         private LinkedListNode<AxisSrchNode<StoreType>> SearchNode(float axisValue)
         {
             for (var node = storage.First; node != null; node = node.Next) {
-                if (node.Value.axisVal + eps > axisValue) {
+                if (eps > axisValue - node.Value.axisVal) {
                     return node.Previous;
                 }
             }
@@ -394,14 +476,14 @@ public class VoronoiDiagram
             } catch {
                 if (border.begin != null) {
                     float lineSide = line.WhereDot( border.begin.Value );
-                    if (Math.Abs( lineSide ) < eps) {
+                    if (Math.Abs( lineSide ) < AdEps( border.begin.Value.x, border.begin.Value.y )) {
                         // Just ignore border
                     } else if (lineSide > 0) {
                         newBorders.Add( border );
                     }
                 } else if (border.end != null) {
                     float lineSide = line.WhereDot( border.end.Value );
-                    if (Math.Abs( lineSide ) < eps) {
+                    if (Math.Abs( lineSide ) < AdEps( border.end.Value.x, border.end.Value.y )) {
                         // Just ignore border
                     } else if (lineSide > 0) {
                         newBorders.Add( border );
@@ -418,10 +500,12 @@ public class VoronoiDiagram
             float cross = line.dx * intLine.dy - line.dy * intLine.dx;
 
             if (border.begin != null && border.end != null) {
-                if (( border.begin.Value.x < intersection.x + eps && border.end.Value.x > intersection.x - eps
-                        || border.begin.Value.x > intersection.x - eps && border.end.Value.x < intersection.x + eps )
-                    && ( border.begin.Value.y < intersection.y + eps && border.end.Value.y > intersection.y - eps
-                        || border.begin.Value.y > intersection.y - eps && border.end.Value.y < intersection.y + eps )) {
+
+                float toBegin = DistanceSqr( intersection, border.begin.Value );
+                float toEnd = DistanceSqr( intersection, border.end.Value );
+                float edgeSize = DistanceSqr( border.begin.Value, border.end.Value );
+
+                if (edgeSize - toBegin > -eps && edgeSize - toEnd > -eps) {
 
                     Border newBorder = new Border( border );
                     if (line.WhereDot( border.begin.Value ) > eps) {
@@ -430,8 +514,8 @@ public class VoronoiDiagram
                         newBorder.begin = intersection;
                     }
 
-                    if (!newBorder.begin.Equals( newBorder.end ) 
-                        && ( line.WhereDot( newBorder.begin.Value ) > eps 
+                    if (!newBorder.begin.Equals( newBorder.end )
+                        && ( line.WhereDot( newBorder.begin.Value ) > eps
                             || line.WhereDot( newBorder.end.Value ) > eps )) {
                         newBorders.Add( newBorder );
                         AddOnLineBorders( line, newBorders, borderSrch, surroundings, intersection, cross, newBorder );
@@ -603,7 +687,7 @@ public class VoronoiDiagram
                     border2.siteRight = newBorder.siteRight;
                 }
                 borderSrch.Add( axisIntersection, border2 );
-            } 
+            }
         }
 
         DotLineSurroundings dotSurr;
@@ -637,8 +721,6 @@ public class VoronoiDiagram
         throw new Exception( "Lines is parallel" );
     }
 
-
-
     private static bool IsOverTangent(Dot cmpDot, Dot arcFocus, float directrix, Dot arcDot)
     {
         // Derivative of prabola is y=ax+b
@@ -650,10 +732,10 @@ public class VoronoiDiagram
         float c = arcDot.y - k * arcDot.x;
         // Y coord of dot on tangent with same X coord as cmpDot
         float cmpDotY = k * cmpDot.x + c;
-        return cmpDotY - cmpDot.y < eps;
+        return cmpDotY - cmpDot.y < AdEps( cmpDotY, cmpDot.y );
     }
 
-    private static bool InsertCircleIfPossible(Corner leftCorner, Corner rightCorner, float directrix, LinkedList<Event> events, Dictionary<LinkedListNode<Dot>, LinkedListNode<Event>> circleEvents)
+    private static bool InsertCircleIfPossible(Corner leftCorner, Corner rightCorner, Event prevEvent, LinkedList<Event> events, Dictionary<LinkedListNode<Dot>, LinkedListNode<Event>> circleEvents)
     {
         LinkedListNode<Dot> arc = leftCorner.rightArcNode;
         if (arc != rightCorner.leftArcNode) {
@@ -666,9 +748,19 @@ public class VoronoiDiagram
             } catch {
                 return false;
             }
+            if ((circle.v1.Equals( prevEvent.circle.v1 ) 
+                    && circle.v2.Equals( prevEvent.circle.v3 ) 
+                    && circle.v3.Equals( prevEvent.circle.v2 ))
+                || (circle.v1.Equals( prevEvent.circle.v2 )
+                    && circle.v2.Equals( prevEvent.circle.v1 )
+                    && circle.v3.Equals( prevEvent.circle.v3 ))) {
+                // In specific condition when leftCorner and rightCorner too near, IsOverTangent may return incorrect result
+                // I beleave we can avoid this problem with this check.
+                return false;
+            }
             // If circle center is over tangent of arc in coordinate of corner then corners of arc come together with directix increase. Else corners diverge and circle is false.
-            if (IsOverTangent( circle.center, arc.Value, directrix, leftCorner.dot )
-                && IsOverTangent( circle.center, arc.Value, directrix, rightCorner.dot )) {
+            if (IsOverTangent( circle.center, arc.Value, prevEvent.directrix, leftCorner.dot )
+                && IsOverTangent( circle.center, arc.Value, prevEvent.directrix, rightCorner.dot )) {
                 var newEvent = new Event() {
                     eventType = Event.EventType.Circle,
                     circle = circle,
@@ -713,8 +805,7 @@ public class VoronoiDiagram
     private static LinkedListNode<Event> InsertEvent(LinkedList<Event> events, Event newEvent)
     {
         for (var currEvent = events.First; currEvent != null; currEvent = currEvent.Next) {
-            if (currEvent.Value.directrix > newEvent.directrix
-                || SameValue( currEvent.Value.directrix, newEvent.directrix )) {
+            if (currEvent.Value.directrix >= newEvent.directrix) {
                 return events.AddBefore( currEvent, newEvent );
             }
         }
@@ -728,6 +819,14 @@ public class VoronoiDiagram
 
     private static Dot[] GetParabolasIntersect(Dot v1, Dot v2, float directrix)
     {
+        if(Math.Abs(v1.y - directrix ) < AdEps( v1.y, directrix )) {
+            Dot retDot = GetParabolaCoord( v2, directrix, v1.x );
+            return new Dot[2] { retDot, retDot };
+        }
+        if (Math.Abs( v2.y - directrix ) < AdEps( v2.y, directrix )) {
+            Dot retDot = GetParabolaCoord( v1, directrix, v2.x );
+            return new Dot[2] { retDot, retDot };
+        }
         float divider1 = 1f / ( v1.y - directrix );
         float divider2 = 1f / ( v2.y - directrix );
         float a = divider1 - divider2;
@@ -737,7 +836,7 @@ public class VoronoiDiagram
         Func<float, float, float, float, float> xFunc = (a, b, D, i) => .5f * ( -b + i * (float)Math.Sqrt( D ) ) / a;
         Func<float, Dot, float, float> yFunc = (x, dot, dir) =>
             .5f / ( dot.y - dir ) * ( ( x - dot.x ) * ( x - dot.x ) + dot.y * dot.y - dir * dir );
-        if (Math.Abs( a ) > eps) {
+        if (Math.Abs( a ) > AdEps( divider1, divider2 )) {
             float D = b * b - 4f * a * c;
             if (D < 0) {
                 throw new Exception( $"Parabolas never itersect with v1={v1}, v2={v2} and directrix={directrix}" );
@@ -912,8 +1011,13 @@ public class VoronoiDiagram
 
     private static float Distance(Dot dot1, Dot dot2)
     {
+        return MathF.Sqrt( DistanceSqr( dot1, dot2 ) );
+    }
+
+    private static float DistanceSqr(Dot dot1, Dot dot2)
+    {
         float dx = dot2.x - dot1.x;
         float dy = dot2.y - dot1.y;
-        return (float)Math.Sqrt( dx * dx + dy * dy );
+        return dx * dx + dy * dy;
     }
 }
