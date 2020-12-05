@@ -11,15 +11,20 @@ namespace VorDiag
     class Program
     {
         static bool drawDebug = false;
-        static bool test = false;
-        static string specificTestName = "";
+        static bool test = true;
+        static string specificTestName = "test10";
+        static int rndGenerationsCount = 1;
+        static int rndDotCountMin = 1000;
+        static int rndDotCountMax = 1200;
+        static int resolutionX = 700;
+        static int resolutionY = 700;
 
         static void Main(string[] args)
         {
             if (test) {
                 BorderConditionTests();
             } else {
-                RandomGenerationTests( 20, 10, 100 );
+                RandomGenerationTests( rndGenerationsCount, rndDotCountMin, rndDotCountMax );
             }
         }
 
@@ -44,7 +49,12 @@ namespace VorDiag
                 inputRepr.dots = dots.Select( dot => new float[2] { dot.x, dot.y } ).ToArray();
                 File.WriteAllText( $"input_{iter.ToString()}.json", inputRepr.GetContent() );
 
-                var borders = VoronoiDiagram.CreateEdges( dots );
+                DiagramBuildLogger logger = null;
+                if (drawDebug) {
+                    logger = new DiagramBuildLogger( "", $"output_{iter.ToString()}_debug", boundingBox, resolutionX, resolutionY );
+                }
+
+                var borders = VoronoiDiagram.CreateEdges( dots, logger );
 
                 borders = VoronoiDiagram.ApplyBoundingBox( borders, boundingBox );
 
@@ -59,7 +69,7 @@ namespace VorDiag
 
         static void SetupCanvas(CanvasCreator canvasCreator, VoronoiDiagram.BoundingBox boundingBox)
         {
-            canvasCreator.size = new CanvasCreator.Size() { x = 700, y = 700 };
+            canvasCreator.size = new CanvasCreator.Size() { x = resolutionX, y = resolutionY };
 
             const float margin = 0.1f;
             canvasCreator.SetupCamera(
@@ -100,7 +110,7 @@ namespace VorDiag
 
                 DiagramBuildLogger logger = null;
                 if (drawDebug) {
-                    logger = new DiagramBuildLogger( "", fileNameCore + "_debug", boundingBox );
+                    logger = new DiagramBuildLogger( "", fileNameCore + "_debug", boundingBox, resolutionX, resolutionY );
                 }
 
                 var dots = inputRepr.dots.Select( d => new VoronoiDiagram.Dot() { x = d[0], y = d[1] } );

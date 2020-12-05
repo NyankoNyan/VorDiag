@@ -96,7 +96,7 @@ namespace Figure
 
         private static float GetAngleCompareValue(float x, float y)
         {
-            if (Math.Abs( x ) > Math.Abs( y )) {
+            if (MathF.Abs( x ) > MathF.Abs( y )) {
                 return y / x + ( x < 0 ? 4f : 0 );
             } else {
                 return -x / y + 2f * Math.Sign( y );

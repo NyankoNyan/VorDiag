@@ -8,12 +8,15 @@ namespace VorDiag
         private string outputDir, filePrefix;
         private VoronoiDiagram.BoundingBox boundingBox;
         private int step = 1;
+        private float resX, resY;
 
-        public DiagramBuildLogger(string outputDir, string filePrefix, VoronoiDiagram.BoundingBox boundingBox)
+        public DiagramBuildLogger(string outputDir, string filePrefix, VoronoiDiagram.BoundingBox boundingBox, float resolutionX, float resolutionY)
         {
             this.outputDir = outputDir;
             this.filePrefix = filePrefix;
             this.boundingBox = boundingBox;
+            resX = resolutionX;
+            resY = resolutionY;
         }
 
         void VoronoiDiagram.IBuildInfo.SendState(
@@ -49,7 +52,7 @@ namespace VorDiag
                 canvasCreator.AddDot( dot.x, dot.y );
             }
 
-            canvasCreator.size = new CanvasCreator.Size() { x = 700, y = 700 };
+            canvasCreator.size = new CanvasCreator.Size() { x = resX, y = resY };
             const float margin = 0.1f;
             canvasCreator.SetupCamera(
                 boundingBox.x - boundingBox.sizeX * margin,
