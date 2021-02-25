@@ -68,15 +68,5 @@ namespace Figure
                 Polygons[i].Id = i + 1;
             }
         }
-
-        //public void CompleteLoops()
-        //{
-        //    foreach (Polygon polygon in Polygons) {
-        //        polygon.Sort();
-        //    }
-        //    foreach (Dot dot in Dots) {
-        //        dot.Sort();
-        //    }
-        //}
     }
 }

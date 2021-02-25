@@ -30,6 +30,14 @@ public class VoronoiDiagram
         return outBorders.Where( x => x.begin != null && x.end != null ).ToList();
     }
 
+    private class BeachLine
+    {
+        public void SearchBeachPart(float x)
+        {
+
+        }
+    }
+
     public static List<Border> CreateEdges(IEnumerable<Dot> dots, IBuildInfo buildInfo = null)
     {
         LinkedList<Event> events = new LinkedList<Event>( dots.OrderBy( dot => dot, new DotPreciceComparerY() ).Distinct().Select( dot => new Event( dot ) ) );
@@ -330,7 +338,7 @@ public class VoronoiDiagram
                         && ( line.WhereDot( newBorder.begin.Value ) > eps
                             || line.WhereDot( newBorder.end.Value ) > eps )) {
                         newBorders.Add( newBorder );
-                        AddOnLineBorders( line, newBorders, borderSrch, surroundings, intersection, cross, newBorder );
+                        AddOnLineBorders( line, borderSrch, surroundings, intersection, cross, newBorder );
                     }
 
                 } else {
@@ -358,7 +366,7 @@ public class VoronoiDiagram
 
                             if (!newBorder.begin.Equals( newBorder.end )) {
                                 newBorders.Add( newBorder );
-                                AddOnLineBorders( line, newBorders, borderSrch, surroundings, intersection, cross, newBorder );
+                                AddOnLineBorders( line, borderSrch, surroundings, intersection, cross, newBorder );
                             }
 
                         } else {
@@ -375,7 +383,7 @@ public class VoronoiDiagram
                             }
                             newBorders.Add( newBorder );
 
-                            AddOnLineBorders( line, newBorders, borderSrch, surroundings, intersection, cross, newBorder );
+                            AddOnLineBorders( line, borderSrch, surroundings, intersection, cross, newBorder );
                         } else {
                             // Ray don't intersect line
                         }
@@ -391,7 +399,7 @@ public class VoronoiDiagram
                     }
                     newBorders.Add( newBorder );
 
-                    AddOnLineBorders( line, newBorders, borderSrch, surroundings, intersection, cross, newBorder );
+                    AddOnLineBorders( line, borderSrch, surroundings, intersection, cross, newBorder );
                 }
             }
         }
@@ -450,7 +458,7 @@ public class VoronoiDiagram
         return dx * dx + dy * dy;
     }
 
-    private static void AddOnLineBorders(Line line, List<Border> newBorders, AxisSrch<Border> borderSrch, Dictionary<Dot, DotLineSurroundings> surroundings, Dot intersection, float cross, Border newBorder)
+    private static void AddOnLineBorders(Line line, AxisSrch<Border> borderSrch, Dictionary<Dot, DotLineSurroundings> surroundings, Dot intersection, float cross, Border newBorder)
     {
         float axisIntersection;
         if (MathF.Abs( line.dx ) > MathF.Abs( line.dy )) {
@@ -764,16 +772,6 @@ public class VoronoiDiagram
         }
     }
 
-    //private static Border SearchBorder(List<Border> borders, Dot site1, Dot site2)
-    //{
-    //    foreach (var border in borders) {
-    //        if (border.siteLeft.Equals( site1 ) && border.siteRight.Equals( site2 )
-    //            || border.siteLeft.Equals( site2 ) && border.siteRight.Equals( site1 )) {
-    //            return border;
-    //        }
-    //    }
-    //    throw new Exception( "Border not found" );
-    //}
     private static bool SameValue(float a, float b)
     {
         return MathF.Abs( a - b ) < eps;

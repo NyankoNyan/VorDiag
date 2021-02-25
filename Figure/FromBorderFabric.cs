@@ -102,53 +102,5 @@ namespace Figure
                 return -x / y + 2f * Math.Sign( y );
             }
         }
-        //public static PolygonRepr Create(IEnumerable<VoronoiDiagram.Border> borders, IEnumerable<VoronoiDiagram.Dot> polygonCenters)
-        //{
-        //    Dictionary<PolygonRepr.Coord, Polygon> polygonSrch = new Dictionary<PolygonRepr.Coord, Polygon>();
-        //    PolygonRepr polyRepr = new PolygonRepr();
-        //    SortedSet<VoronoiDiagram.Dot> validCenters = new SortedSet<VoronoiDiagram.Dot>( polygonCenters, new VoronoiDiagram.DotComparerYPriority() );
-        //    Polygon outerPoly = new Polygon();
-        //    polyRepr.Polygons.Add( outerPoly );
-
-        //    foreach (var border in borders) {
-        //        if (border.begin == null || border.end == null) {
-        //            throw new Exception( "Unconsistent border" );
-        //        }
-        //        var dotBegin = polyRepr.AddDot( border.begin.Value.x, border.begin.Value.y );
-        //        var dotEnd = polyRepr.AddDot( border.end.Value.x, border.end.Value.y );
-
-        //        Polygon polyLeft;
-        //        Polygon polyRight;
-
-        //        if (validCenters.Contains( border.siteLeft )) {
-        //            PolygonRepr.Coord dotLeft = new PolygonRepr.Coord( polyRepr, border.siteLeft.x, border.siteLeft.y );
-        //            if (!polygonSrch.TryGetValue( dotLeft, out polyLeft )) {
-        //                polyLeft = new Polygon();
-        //                polyRepr.Polygons.Add( polyLeft );
-        //                polygonSrch.Add( dotLeft, polyLeft );
-        //            }
-        //        } else {
-        //            polyLeft = outerPoly;
-        //        }
-
-        //        if (validCenters.Contains( border.siteRight )) {
-        //            PolygonRepr.Coord dotRight = new PolygonRepr.Coord( polyRepr, border.siteRight.x, border.siteRight.y );
-        //            if (!polygonSrch.TryGetValue( dotRight, out polyRight )) {
-        //                polyRight = new Polygon();
-        //                polygonSrch.Add( dotRight, polyRight );
-        //                polyRepr.Polygons.Add( polyRight );
-        //            }
-        //        } else {
-        //            polyRight = outerPoly;
-        //        }
-
-        //        polyRepr.Edges.Add( new Edge( dotBegin, dotEnd, polyLeft, polyRight ) );
-        //    }
-        //    polyRepr.FillIDs();
-        //    polyRepr.CompleteLoops();
-
-        //    return polyRepr;
-        //}
-
     }
 }
